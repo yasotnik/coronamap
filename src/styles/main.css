@@ -1,3 +1,15 @@
 .container {
     padding-top: 1rem;
 }
+
+.infoblock {
+    padding-top: 1rem;
+}
+
+.map-container {
+    /* border-width: 3px !important; */
+}
+
+.border-3 {
+    border-width: 3px !important;
+}

@@ -1,53 +1,49 @@
 import React, { Component } from "react";
 import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-
-am4core.useTheme(am4themes_animated);
+import * as am4maps from "@amcharts/amcharts4/maps";
+import am4geodata_worldLow from "@amcharts/amcharts4-geodata/worldLow";
 
 class Map extends Component {
   componentDidMount() {
-    let chart = am4core.create("chartdiv", am4charts.XYChart);
+    let map = am4core.create("chartdiv", am4maps.MapChart);
+    map.geodata = am4geodata_worldLow;
+    map.projection = new am4maps.projections.Miller();
 
-    chart.paddingRight = 20;
+    var polygonSeries = map.series.push(new am4maps.MapPolygonSeries());
+    polygonSeries.exclude = ["AQ"];
 
-    let data = [];
-    let visits = 10;
-    for (let i = 1; i < 366; i++) {
-      visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
-      data.push({
-        date: new Date(2018, 0, i),
-        name: "name" + i,
-        value: visits,
-      });
-    }
+    polygonSeries.data = [
+      {
+        id: "US",
+        name: "United States",
+        value: 100,
+        fill: am4core.color("#F05C5C"),
+      },
+      {
+        id: "FR",
+        name: "France",
+        value: 50,
+        fill: am4core.color("#5C5CFF"),
+      },
+    ];
 
-    chart.data = data;
+    // Make map load polygon (like country names) data from GeoJSON
+    polygonSeries.useGeodata = true;
 
-    let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-    dateAxis.renderer.grid.template.location = 0;
+    // Configure series
+    var polygonTemplate = polygonSeries.mapPolygons.template;
+    polygonTemplate.tooltipText = "{name}: {value}";
 
-    let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-    valueAxis.tooltip.disabled = true;
-    valueAxis.renderer.minWidth = 35;
+    polygonTemplate.propertyFields.fill = "fill";
 
-    let series = chart.series.push(new am4charts.LineSeries());
-    series.dataFields.dateX = "date";
-    series.dataFields.valueY = "value";
-
-    series.tooltipText = "{valueY.value}";
-    chart.cursor = new am4charts.XYCursor();
-
-    let scrollbarX = new am4charts.XYChartScrollbar();
-    scrollbarX.series.push(series);
-    chart.scrollbarX = scrollbarX;
-
-    this.chart = chart;
+    // Create hover state and set alternative fill color
+    var hs = polygonTemplate.states.create("hover");
+    hs.properties.fill = am4core.color("#367B25");
   }
 
   componentWillUnmount() {
-    if (this.chart) {
-      this.chart.dispose();
+    if (this.map) {
+      this.map.dispose();
     }
   }
 
